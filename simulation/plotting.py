@@ -336,7 +336,6 @@ def print_confirmation_confidences_all_agents_with_tangle(self):
     #For genesis take agent 0 as default (always same value)
     labels[self.transactions[0]] = str(np.round(self.transactions[0].exit_probability_multiple_agents[self.agents[0]],2))
 
-    #col = [['r','b'][int(np.round(transaction.confirmation_confidence,1))] for transaction in self.DG.nodes()] #Color change for 100% confidence
 
     #Coloring of tips
     tips = self.get_tips()
@@ -344,16 +343,12 @@ def print_confirmation_confidences_all_agents_with_tangle(self):
         # self.DG.node[tip]["node_color"] = '#ffdbb8'
         self.DG.node[tip]["node_color"] = self.agent_tip_colors[int(str(tip.agent))]
 
-    #Didn't work on Linux
-    # col = list(nx.get_node_attributes(self.DG, 'node_color').values())
     col = []
     for transaction in self.DG:
         col.append(self.DG.node[transaction]["node_color"])
 
     #Creating figure
-    #plt.figure(figsize=(12, 6))
     nx.draw_networkx(self.DG, pos, with_labels=True, node_size = 100, font_size=5.5, node_color = col)
-    #nx.draw_networkx_labels(self.DG, lower_pos, labels=labels, font_size=6)
 
     plt.xlabel("Time (s)")
     plt.yticks([])
@@ -365,7 +360,6 @@ def print_confirmation_confidences_all_agents_with_tangle(self):
     labels = []
     x = [i for i in range(len(self.transactions))]
     mean_y = np.squeeze([np.mean([i[agent.id] for agent in self.agents]) for i in self.confirmation_confidences])
-    # plt.plot(y, label=label, color=self.agent_colors[int(str(agent))])
     for agent in self.agents:
         x_agent = [i for i in x if self.transactions[i].agent == agent]
         y_agent = [mean_y[i] for i in x_agent]
@@ -378,8 +372,6 @@ def print_confirmation_confidences_all_agents_with_tangle(self):
 
 
     #For more than 10 agents
-    # ax = plt.axes()
-    # ax.set_color_cycle([plt.cm.tab20c(i) for i in np.linspace(0, 1, len(y))])
     plt.xlabel("Transactions")
     plt.ylabel("Confirmation Confidence")
     plt.legend(labels, loc="upper right", ncol=2)

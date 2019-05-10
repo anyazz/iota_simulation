@@ -34,10 +34,6 @@ from simulation.simulation_multi_agent import Multi_Agent_Simulation
 
 start_time = timeit.default_timer()
 runs = 100
-# x = [.005, .01, .03, .05, .1, .15, .2, .25, .3, .35, .5]
-x = [.35, .4, .45, .5]
-y = []
-# for cc in x:
 data = []
 for i in range(runs):
     run_data = []
@@ -52,10 +48,7 @@ for i in range(runs):
     data.append(attachment)
 
 data = np.mean(data, axis=0)
-    # print(data[0])
-    # y.append(data[0])
 print("OVERALL ATTACHMENT:", data)
-# print_attachment_probabilities_all_agents(simu2, data)
 
 
     # csv_export(simu2)
