@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+from matplotlib import interactive
 
 
 #############################################################################
@@ -139,8 +140,7 @@ def print_tips_over_time_multiple_agents_with_tangle(self, no_current_transactio
     title = "Transactions = " + str(self.no_of_transactions) + \
             ",  " + r'$\lambda$' + " = " + str(self.lam) + \
             ",  " + r'$d$' + " = " + str(self.distances[1][0])
-    if (self.tip_selection_algo == "weighted"):
-        title += ",  " + r'$\alpha$' + " = " + str(self.alpha)
+    title += ",  " + r'$\alpha$' + " = " + str(self.alpha)
     plt.xlabel("Time (s)")
     plt.ylabel("Number of tips")
     plt.legend(loc='upper left')
@@ -182,6 +182,7 @@ def print_tips_over_time_multiple_agents_with_tangle(self, no_current_transactio
 
     plt.xlabel("Time (s)")
     plt.yticks([])
+    interactive(True)
     plt.show()
 
 
@@ -268,7 +269,7 @@ def print_attachment_probabilities_alone(self):
     # plt.savefig('graph' +  str(title) + '_3' + '.png')
 
 
-def print_attachment_probabilities_all_agents(self):
+def print_attachment_probabilities_all_agents(self, data):
 
     title = "Transactions = " + str(self.no_of_transactions) + \
             ",  " + r'$\lambda$' + " = " + str(self.lam) + \
@@ -296,12 +297,7 @@ def print_attachment_probabilities_all_agents(self):
 
     #Boxplot
     plt.subplot(1, 2, 2)
-
-    data = []
-
-    for agent in range(self.no_of_agents):
-        agent_data = [i[1][agent] for i in self.record_attachment_probabilities]
-        data.append(agent_data)
+    
 
     plt.boxplot(data, 0, '+')
     plt.xlabel("Agents")
@@ -311,3 +307,52 @@ def print_attachment_probabilities_all_agents(self):
     plt.subplots_adjust(top=0.94)
     plt.show()
     # plt.savefig(str(no) + '.png')
+
+def print_confirmation_confidences_all_agents(self):
+
+    title = "Transactions = " + str(self.no_of_transactions) + \
+            ",  " + r'$\lambda$' + " = " + str(self.lam) + \
+            ",  " + r'$d$' + " = " + str(self.distances[1][0])
+    if (self.tip_selection_algo == "weighted"):
+        title += ",  " + r'$\alpha$' + " = " + str(self.alpha)
+
+    plt.figure()
+
+    #Attachment probabilities
+    labels = []
+    x = [i for i in range(len(self.transactions))]
+    mean_y = np.squeeze([np.mean([i[agent.id] for agent in self.agents]) for i in self.confirmation_confidences])
+    # plt.plot(y, label=label, color=self.agent_colors[int(str(agent))])
+    for agent in self.agents:
+        x_agent = [i for i in x if self.transactions[i].agent == agent]
+        y_agent = [mean_y[i] for i in x_agent]
+        plt.scatter(x_agent, y_agent, marker='o', color=self.agent_colors[int(str(agent))], zorder=2)
+
+    plt.xticks(np.arange(0, len(x), step=5))
+
+    for (x,y) in zip(x, mean_y):                                       # <--
+        plt.annotate('%s' % x, xy=(x,y), textcoords='data', fontsize=6) # <--
+
+
+    #For more than 10 agents
+    # ax = plt.axes()
+    # ax.set_color_cycle([plt.cm.tab20c(i) for i in np.linspace(0, 1, len(y))])
+    plt.xlabel("Transactions")
+    plt.ylabel("Confirmation Confidence")
+    plt.legend(labels, loc="upper right", ncol=2)
+
+    #Boxplot
+    # plt.subplot(1, 2, 2)
+    
+    interactive(False)
+
+    # plt.boxplot(data, 0, '+')
+    # plt.xlabel("Agents")
+    # plt.xticks(np.arange(1, self.no_of_agents+1), np.arange(0, self.no_of_agents))
+    # plt.suptitle(title)
+    # plt.tight_layout()
+    # plt.subplots_adjust(top=0.94)
+    plt.show()
+    # plt.savefig(str(no) + '.png')
+
+

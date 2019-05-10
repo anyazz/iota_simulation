@@ -319,9 +319,7 @@ class Single_Agent_Simulation:
 
 
     def calc_confirmation_confidence(self):
-
         tips = self.get_tips()
-
         for transaction in self.DG.nodes:
             for tip in tips:
                 if (nx.has_path(self.DG, tip, transaction) and tip != transaction):
