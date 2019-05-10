@@ -20,7 +20,7 @@ from simulation.transaction import Transaction
 class Multi_Agent_Simulation:
     def __init__(self, _no_of_transactions, _lambda, _no_of_agents, \
                  _alpha, _distance, _tip_selection_algos, _latency = 1, \
-                 _agent_choice=None,  _conflict_coefficient=.01,  _printing=False):
+                 _agent_choice=None, _conflicts=False, _conflict_coefficient=.01,  _printing=False):
 
         #Use configuration file when provided
         if(len(sys.argv) != 1):
@@ -50,6 +50,7 @@ class Multi_Agent_Simulation:
                 _agent_choice = list(np.ones(self.no_of_agents)/self.no_of_agents)
             self.agent_choice = _agent_choice
             self.printing = _printing
+            self.conflicts = _conflicts
             self.conflict_coefficient = _conflict_coefficient # probability of 2 unattached transactions conflicting
 
         #Basic parameter checks
@@ -176,8 +177,8 @@ class Multi_Agent_Simulation:
 
         #For measuring partitioning
         start_time2 = timeit.default_timer()
-        # print("EXIT PROB", self.calc_exit_probabilities_multiple_agents(transaction))
-        # print("ATTACH PROB", self.calc_attachment_probabilities(transaction))
+        # self.calc_exit_probabilities_multiple_agents(transaction)
+        # self.calc_attachment_probabilities(transaction)
         self.calc_confirmation_confidence_multiple_agents(transaction)
         # self.attachment_probabilities_2(transaction)
 
@@ -336,13 +337,12 @@ class Multi_Agent_Simulation:
 
     #Check if incoming transaction conflicts with candidate tip
     def get_unconflicting_tips(self, transaction, valid_tips):
-        # return valid_tips
+        if not self.conflicts:
+            return valid_tips
 
-        # print("TRANSACTION ID:", transaction.id, transaction.direct_data, transaction.indirect_data)
         unconflicting_tips = []
         reject = False
         for tip in valid_tips:
-            # print(tip.id, tip.indirect_data)
             for i in transaction.indirect_data:
                 for j in tip.indirect_data:
                     n = int(1 / self.conflict_coefficient)
@@ -351,7 +351,6 @@ class Multi_Agent_Simulation:
                         break
             if not reject:
                 unconflicting_tips.append(tip)
-        # print(len(valid_tips), len(unconflicting_tips))
         return unconflicting_tips
 
     #############################################################################
@@ -578,6 +577,7 @@ class Multi_Agent_Simulation:
         #Choose tip 1 from unconflicting tips and update transaction indirect_data
         unconflicting_tips = self.get_unconflicting_tips(transaction, valid_tips)
         selfish_tips = [tip for tip in unconflicting_tips if tip.agent == transaction.agent]
+        selfish_tips = selfish_tips if selfish_tips else unconflicting_tips
         if selfish_tips:
             tip1 = self.weighted_random_walk(transaction, selfish_tips)
             transaction.indirect_data = tip1.indirect_data.union(transaction.indirect_data)
@@ -586,6 +586,7 @@ class Multi_Agent_Simulation:
         #Choose tip 2 among newly unconflicting tips and update
         unconflicting_tips = self.get_unconflicting_tips(transaction, valid_tips)
         selfish_tips = [tip for tip in unconflicting_tips if tip.agent == transaction.agent]
+        selfish_tips = selfish_tips if selfish_tips else unconflicting_tips
         if selfish_tips:
             tip2 = self.weighted_random_walk(transaction, selfish_tips)
             transaction.indirect_data = tip2.indirect_data.union(transaction.indirect_data)

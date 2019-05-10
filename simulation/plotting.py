@@ -308,15 +308,58 @@ def print_attachment_probabilities_all_agents(self, data):
     plt.show()
     # plt.savefig(str(no) + '.png')
 
-def print_confirmation_confidences_all_agents(self):
-
+def print_confirmation_confidences_all_agents_with_tangle(self):
+    plt.figure(figsize=(14, 7))
+    #Print title
     title = "Transactions = " + str(self.no_of_transactions) + \
             ",  " + r'$\lambda$' + " = " + str(self.lam) + \
             ",  " + r'$d$' + " = " + str(self.distances[1][0])
-    if (self.tip_selection_algo == "weighted"):
-        title += ",  " + r'$\alpha$' + " = " + str(self.alpha)
+    title += ",  " + r'$\alpha$' + " = " + str(self.alpha)
+    plt.xlabel("Time (s)")
+    plt.ylabel("Number of tips")
+    plt.legend(loc='upper left')
+    plt.title(title)
 
-    plt.figure()
+
+    plt.subplot(2, 1, 1)
+
+    #Positioning and text of labels
+    pos = nx.get_node_attributes(self.DG, 'pos')
+    lower_pos = {key: (x, y - 0.1) for key, (x, y) in pos.items()} #For label offset (0.1)
+
+    #Create labels with the confirmation confidence of every transaction (of the issueing agent)
+    labels = {
+        transaction: str(str(np.round(transaction.exit_probability_multiple_agents[transaction.agent], 2)) + "  " +
+                         str(np.round(transaction.confirmation_confidence_multiple_agents[transaction.agent], 2)))
+        for transaction in self.DG.nodes if transaction.agent != None
+    }
+    #For genesis take agent 0 as default (always same value)
+    labels[self.transactions[0]] = str(np.round(self.transactions[0].exit_probability_multiple_agents[self.agents[0]],2))
+
+    #col = [['r','b'][int(np.round(transaction.confirmation_confidence,1))] for transaction in self.DG.nodes()] #Color change for 100% confidence
+
+    #Coloring of tips
+    tips = self.get_tips()
+    for tip in tips:
+        # self.DG.node[tip]["node_color"] = '#ffdbb8'
+        self.DG.node[tip]["node_color"] = self.agent_tip_colors[int(str(tip.agent))]
+
+    #Didn't work on Linux
+    # col = list(nx.get_node_attributes(self.DG, 'node_color').values())
+    col = []
+    for transaction in self.DG:
+        col.append(self.DG.node[transaction]["node_color"])
+
+    #Creating figure
+    #plt.figure(figsize=(12, 6))
+    nx.draw_networkx(self.DG, pos, with_labels=True, node_size = 100, font_size=5.5, node_color = col)
+    #nx.draw_networkx_labels(self.DG, lower_pos, labels=labels, font_size=6)
+
+    plt.xlabel("Time (s)")
+    plt.yticks([])
+
+
+    plt.subplot(2, 1, 2)
 
     #Attachment probabilities
     labels = []
@@ -340,19 +383,4 @@ def print_confirmation_confidences_all_agents(self):
     plt.xlabel("Transactions")
     plt.ylabel("Confirmation Confidence")
     plt.legend(labels, loc="upper right", ncol=2)
-
-    #Boxplot
-    # plt.subplot(1, 2, 2)
-    
-    interactive(False)
-
-    # plt.boxplot(data, 0, '+')
-    # plt.xlabel("Agents")
-    # plt.xticks(np.arange(1, self.no_of_agents+1), np.arange(0, self.no_of_agents))
-    # plt.suptitle(title)
-    # plt.tight_layout()
-    # plt.subplots_adjust(top=0.94)
     plt.show()
-    # plt.savefig(str(no) + '.png')
-
-
